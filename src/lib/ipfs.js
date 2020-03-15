@@ -91,6 +91,8 @@ async function getContent (ipfsNode, hash) {
       // console.log(`index: ${index}`)
       // console.log(`file.type: ${file.type}`)
 
+      console.log(`file.path: ${file.path}`)
+
       // if (index === 0) {
       //   // Is Folder
       //   fs.mkdirSync(`${pathStore}${file.path}`, { recursive: true })
