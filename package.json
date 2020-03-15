@@ -29,6 +29,8 @@
     "@chris.troutner/bch-js": "^2.3.9",
     "glob": "^7.1.6",
     "ipfs": "^0.41.2",
+    "it-all": "^1.0.1",
+    "it-concat": "^1.0.0",
     "kcors": "^2.2.2",
     "koa": "^2.11.0",
     "koa-bodyparser": "^4.2.1",

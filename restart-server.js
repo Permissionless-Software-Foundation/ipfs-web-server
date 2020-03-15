@@ -114,10 +114,13 @@ async function initServer () {
 async function ipfsGet (hash) {
   // Get the latest content from the IPFS network and Add into ipfs-data.
   await ipfs.getContent(ipfsNode, hash)
+  // await ipfsNode.get(hash)
+  // await ipfsNode.files.get(hash)
   console.log(`Updated content!`)
 
   // Adds an IPFS object to the pinset and also stores it to the IPFS repo.
-  await ipfs.pinAdd(ipfsNode, hash)
+  // await ipfs.pinAdd(ipfsNode, hash)
+  await ipfsNode.pin.add(hash)
   console.log(`New content published with hash ${hash}`)
 }
 

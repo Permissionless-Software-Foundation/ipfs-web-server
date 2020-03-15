@@ -1,5 +1,9 @@
 const IPFS = require('ipfs')
 const fs = require('fs')
+const all = require('it-all')
+const concat = require('it-concat')
+const util = require('util')
+
 const config = require('../../config')
 
 let ipfs
@@ -37,7 +41,8 @@ async function startIPFS () {
           Swarm: [
             `/ip4/0.0.0.0/tcp/${config.ipfsPort1}`,
             `/ip4/127.0.0.1/tcp/${config.ipfsPort2}/ws`,
-            `/ip4/127.0.0.1/tcp/4001/ipfs/QmbgP7nmMsqCxVEkywt8aSdyoBL9hYNyP1Uw97cVhThn3L`
+            `/ip4/127.0.0.1/tcp/4001/ipfs/QmbgP7nmMsqCxVEkywt8aSdyoBL9hYNyP1Uw97cVhThn3L`,
+            `/ip4/127.0.0.1/tcp/4001/ipfs/QmSgDzV1GeTg1tx4wU5WKjxMvT692xvt8FS14JdoDEgFjj`
           ],
           API: `/ip4/127.0.0.1/tcp/${config.ipfsPort1}`,
           Gateway: `/ip4/127.0.0.1/tcp/${config.ipfsPort2}`
@@ -59,30 +64,98 @@ async function startIPFS () {
 async function getContent (ipfsNode, hash) {
   try {
     em.emit('download-start')
-    // Get the latest content from the IPFS network.
-    return new Promise((resolve, reject) => {
-      ipfsNode.get(hash, async function (err, files) {
-        if (err) {
-          em.emit('download-stop')
-          reject(err)
-        }
+    console.log(`starting download.`)
 
-        const pathStore = `${process.cwd()}/ipfs-data/` // Path to store new ipfs-data
-        files.forEach(async file => {
-          // Map files
-          //  console.log(file)
-          if (file.type === 'file') {
-            // Is File
-            fs.writeFileSync(`${pathStore}${file.path}`, file.content)
-          } else if (file.type === 'dir') {
-            // Is Folder
-            fs.mkdirSync(`${pathStore}${file.path}`, { recursive: true })
-          }
-        })
-        em.emit('download-stop')
-        resolve(true)
-      })
+    // const promises = await ipfsNode.get(hash)
+    // console.log(`promises: ${JSON.stringify(promises, null, 2)}`)
+
+    // https://github.com/ipfs/js-ipfs/blob/master/packages/interface-ipfs-core/src/get.js#L110-L115
+    let files = await all((async function * () {
+      for await (let { path, content } of ipfsNode.get(hash)) {
+        content = content ? (await concat(content)).toString() : null
+        yield { path, content }
+      }
+    })())
+
+    // console.log(`files: ${JSON.stringify(files, null, 2)}`)
+
+    const pathStore = `${process.cwd()}/ipfs-data/` // Path to store new ipfs-data
+
+    console.log(`files[0]: ${JSON.stringify(files[0])}`)
+    // console.log(`files[1]: ${JSON.stringify(files[1])}`)
+    // console.log(`files[2]: ${JSON.stringify(files[2])}`)
+
+    // CT: the file.type property is empty, so I'm not sure how to tell the
+    // difference between a file and a directory.
+    files.forEach(async (file, index) => {
+      // console.log(`index: ${index}`)
+      // console.log(`file.type: ${file.type}`)
+
+      // if (index === 0) {
+      //   // Is Folder
+      //   fs.mkdirSync(`${pathStore}${file.path}`, { recursive: true })
+      // } else {
+      //   // Is File
+      //   fs.writeFileSync(`${pathStore}${file.path}`, file.content)
+      // }
+
+      // Map files
+      // if (file.type === 'file') {
+      //   // Is File
+      //   fs.writeFileSync(`${pathStore}${file.path}`, file.content)
+      // } else if (file.type === 'dir') {
+      //   // Is Folder
+      //   fs.mkdirSync(`${pathStore}${file.path}`, { recursive: true })
+      // }
     })
+
+    return true
+
+    // Get the latest content from the IPFS network.
+    // return new Promise((resolve, reject) => {
+    //   console.log(`ping01`)
+
+    // ipfsNode.get(hash, async function (err, files) {
+    //   console.log(`ping02`)
+    //   if (err) {
+    //     console.error(`Error downloading files: `, err)
+    //     em.emit('download-stop')
+    //     reject(err)
+    //   }
+    //
+    //   console.log(`ping03`)
+    //
+    // const pathStore = `${process.cwd()}/ipfs-data/` // Path to store new ipfs-data
+    //
+    // files.forEach(async file => {
+    //   // Map files
+    //   if (file.type === 'file') {
+    //     // Is File
+    //     fs.writeFileSync(`${pathStore}${file.path}`, file.content)
+    //   } else if (file.type === 'dir') {
+    //     // Is Folder
+    //     fs.mkdirSync(`${pathStore}${file.path}`, { recursive: true })
+    //   }
+    // })
+    //   resolve(files)
+    //
+    //   // files.forEach(async file => {
+    //   //   // Map files
+    //   //   console.log(file)
+    //   //   if (file.type === 'file') {
+    //   //     // Is File
+    //   //     fs.writeFileSync(`${pathStore}${file.path}`, file.content)
+    //   //   } else if (file.type === 'dir') {
+    //   //     // Is Folder
+    //   //     fs.mkdirSync(`${pathStore}${file.path}`, { recursive: true })
+    //   //   }
+    //   // })
+    //
+    //   console.log(`ping04`)
+    //   em.emit('download-stop')
+    //   resolve(true)
+    // })
+    // })
   } catch (err) {
     console.error(`Error in ipfs.js/getContent()`)
     throw err
