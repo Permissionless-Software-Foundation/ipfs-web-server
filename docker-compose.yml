@@ -1,9 +1,9 @@
 # Start the testnet server with the command 'docker-compose up -d'
 
-web-server:
+webserver:
   build: ./production/
   dockerfile: Dockerfile
-  container_name: web-server
+  container_name: webserver
   ports:
     - "3210:3210"  # <host port>:<container port>
     - "4231:4002"  # IPFS
@@ -15,9 +15,9 @@ tor:
   image: goldy/tor-hidden-service
   container_name: tor-server
   links:
-    - web-server
+    - webserver
   environment:
-      TROUTSBLOG_PORTS: 80:3210 # Map port to detected service
+      WEBSERVER_PORTS: 80:3210 # Map port to detected service
   volumes:
     - ./keys:/var/lib/tor/hidden_service/
   restart: always
