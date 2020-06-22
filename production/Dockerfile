@@ -26,7 +26,7 @@ WORKDIR /home/safeuser
 WORKDIR /home/safeuser
 RUN git clone https://github.com/Permissionless-Software-Foundation/ipfs-web-server
 WORKDIR /home/safeuser/ipfs-web-server
-#RUN git checkout unstable
+RUN git checkout unstable
 
 # Install dependencies
 RUN npm install
