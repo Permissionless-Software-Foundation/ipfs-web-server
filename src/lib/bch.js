@@ -47,6 +47,7 @@ class BCH {
 
     // Handle initializing the server.
     if (_this.currentHash === '') _this.currentHash = hash
+    console.log(`_this.currentHash: ${_this.currentHash}`)
 
     // If new hash is detected.
     if (hash !== _this.currentHash) {
