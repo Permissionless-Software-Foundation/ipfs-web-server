@@ -34,30 +34,30 @@ let ipfsNode
 
 // This is the starting function.
 async function manageServer () {
-  ipfsNode = await ipfs.startIPFS()
-
-  console.log('IPFS is ready...!')
-
-  // Retrieve hash from BCH network and retrieve data from IPFS.
-  // p-retry library -If it doesn't find the hash on the first try
-  let hash = await bch.pRetryGetHash()
-
-  // Exit if no hash is found.
-  if (!hash) {
-    console.log(
-      `Could not find IPFS hash associated with BCH address ${config.BCHADDR}`
-    )
-    console.log(
-      `Publish an IPFS hash using the memo-push tool before running this server.`
-    )
-    console.log(`Exiting`)
-    process.exit()
-  }
-
-  console.log(`Downloading content associated with this IPFS hash: ${hash}`)
-  await ipfsGet(hash)
-
   try {
+    ipfsNode = await ipfs.startIPFS()
+
+    console.log('IPFS is ready...!')
+
+    // Retrieve hash from BCH network and retrieve data from IPFS.
+    // p-retry library -If it doesn't find the hash on the first try
+    let hash = await bch.pRetryGetHash()
+
+    // Exit if no hash is found.
+    if (!hash) {
+      console.log(
+        `Could not find IPFS hash associated with BCH address ${config.BCHADDR}`
+      )
+      console.log(
+        `Publish an IPFS hash using the memo-push tool before running this server.`
+      )
+      console.log(`Exiting`)
+      process.exit()
+    }
+
+    console.log(`Downloading content associated with this IPFS hash: ${hash}`)
+    await ipfsGet(hash)
+
     // Start the web server.
     console.log('Start the web server.')
     const server = shell.exec('node index.js', { async: true })
